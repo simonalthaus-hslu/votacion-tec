@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiss Vote | Feria Intercultural 2026</title>
+
+    <style>
+        :root {
+            --swiss-red: #e53935;
+            --yes-green: #4caf50;
+            --text: #202020;
+            --muted: #777;
+            --border: #e5e5e5;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background: #fff;
+        }
+
+        /* DASHBOARD */
+
+        .dashboard {
+            min-height: 100vh;
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--swiss-red);
+            color: white;
+            padding: 26px 40px;
+        }
+
+        .header-content {
+            max-width: 1000px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .event {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            width: 100%;
+            max-width: 1000px;
+            margin: auto;
+            padding: 35px 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .category {
+            color: var(--swiss-red);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+
+        h1 {
+            font-size: clamp(28px, 4vw, 44px);
+            margin: 14px 0 12px;
+            line-height: 1.15;
+        }
+
+        .question {
+            font-size: clamp(16px, 2vw, 20px);
+            color: #555;
+            margin-bottom: 45px;
+        }
+
+        .status {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .result-label {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .percentage {
+            font-size: clamp(48px, 7vw, 78px);
+            font-weight: 750;
+            margin: 10px 0;
+            letter-spacing: -2px;
+        }
+
+        .votes {
+            color: var(--muted);
+            font-size: 17px;
+        }
+
+        .bar {
+            display: flex;
+            height: 32px;
+            width: 100%;
+            margin-top: 35px;
+            background: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .bar-yes {
+            width: 0%;
+            background: var(--yes-green);
+            transition: width 0.35s ease;
+        }
+
+        .bar-no {
+            width: 0%;
+            background: var(--swiss-red);
+            transition: width 0.35s ease;
+        }
+
+        .total {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .updated {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* VOTE INPUT */
+
+        .admin {
+            min-height: 65vh;
+            padding: 70px 30px;
+            background: #f5f5f5;
+            border-top: 1px solid var(--border);
+        }
+
+        .admin-content {
+            max-width: 650px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .admin h2 {
+            font-size: 26px;
+            margin-bottom: 40px;
+        }
+
+        .vote-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .vote-button {
+            padding: 30px;
+            font-size: 28px;
+            font-weight: 700;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .yes-button {
+            background: var(--yes-green);
+        }
+
+        .no-button {
+            background: var(--swiss-red);
+        }
+
+        .controls {
+            margin-top: 35px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .control-button {
+            padding: 12px 20px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        .control-button:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        .admin-note {
+            margin-top: 35px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .content {
+                padding: 30px 22px;
+            }
+
+            .results {
+                gap: 15px;
+            }
+
+            .vote-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PUBLIC DASHBOARD -->
+
+    <section class="dashboard">
+
+        <header class="header">
+            <div class="header-content">
+                <div class="brand">✚ VOTACIÓN TEC</div>
+                <div class="event">FERIA INTERCULTURAL 2026</div>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <div class="category">INICIATIVA POPULAR</div>
+
+            <h1>Por más libertad y responsabilidad</h1>
+
+            <div class="question">
+                ¿Aceptas la iniciativa popular
+                «Por más libertad y responsabilidad»?
+            </div>
+
+            <div class="status">RESULTADOS PROVISIONALES</div>
+
+            <div class="results">
+
+                <div>
+                    <div class="result-label">SÍ</div>
+                    <div class="percentage" id="yesPercent">0,0 %</div>
+                    <div class="votes" id="yesVotes">0 votos</div>
+                </div>
+
+                <div>
+                    <div class="result-label">NO</div>
+                    <div class="percentage" id="noPercent">0,0 %</div>
+                    <div class="votes" id="noVotes">0 votos</div>
+                </div>
+
+            </div>
+
+            <div class="bar">
+                <div class="bar-yes" id="barYes"></div>
+                <div class="bar-no" id="barNo"></div>
+            </div>
+
+            <div class="total" id="totalVotes">
+                0 votos contabilizados
+            </div>
+
+            <div class="updated" id="updated">
+                Esperando los primeros votos
+            </div>
+
+        </main>
+
+    </section>
+
+    <!-- VOTE INPUT -->
+
+    <section class="admin">
+
+        <div class="admin-content">
+
+            <h2>Registrar votos</h2>
+
+            <div class="vote-buttons">
+
+                <button class="vote-button yes-button"
+                        onclick="addVote('yes')">
+                    + SÍ
+                </button>
+
+                <button class="vote-button no-button"
+                        onclick="addVote('no')">
+                    + NO
+                </button>
+
+            </div>
+
+            <div class="controls">
+
+                <button class="control-button"
+                        id="undoButton"
+                        onclick="undoVote()">
+                    Deshacer
+                </button>
+
+                <button class="control-button"
+                        onclick="resetVotes()">
+                    Reiniciar
+                </button>
+
+            </div>
+
+            <div class="admin-note">
+                Los resultados se guardan automáticamente
+                en este dispositivo.
+            </div>
+
+        </div>
+
+    </section>
+
+    <script>
+        const STORAGE_KEY = "swissVote2026";
+
+        let state = {
+            yes: 0,
+            no: 0,
+            history: [],
+            lastUpdated: null
+        };
+
+        // Load saved votes
+
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+
+            if (saved) {
+                const parsed = JSON.parse(saved);
+
+                if (
+                    Number.isSafeInteger(parsed.yes) &&
+                    Number.isSafeInteger(parsed.no) &&
+                    parsed.yes >= 0 &&
+                    parsed.no >= 0 &&
+                    Array.isArray(parsed.history)
+                ) {
+                    state = parsed;
+                }
+            }
+        } catch (error) {
+            console.warn("No se pudieron cargar los votos.", error);
+        }
+
+        // Save votes
+
+        function saveVotes() {
+            try {
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify(state)
+                );
+            } catch (error) {
+                console.warn("No se pudieron guardar los votos.", error);
+                alert("No se pudieron guardar los votos.");
+            }
+        }
+
+        // Add vote
+
+        function addVote(type) {
+            if (!["yes", "no"].includes(type)) return;
+
+            if (!Number.isSafeInteger(state[type] + 1)) {
+                alert("Se alcanzó el límite de votos.");
+                return;
+            }
+
+            state[type]++;
+
+            state.history.push({
+                type: type,
+                previousTime: state.lastUpdated
+            });
+
+            state.lastUpdated = new Date().toISOString();
+
+            saveVotes();
+            updateDashboard();
+        }
+
+        // Undo last vote
+
+        function undoVote() {
+            if (state.history.length === 0) return;
+
+            const last = state.history.pop();
+
+            if (state[last.type] > 0) {
+                state[last.type]--;
+            }
+
+            state.lastUpdated = new Date().toISOString();
+
+            saveVotes();
+            updateDashboard();
+        }
+
+        // Reset votes
+
+        function resetVotes() {
+            const confirmed = confirm(
+                "¿Quieres eliminar todos los votos? " +
+                "Esta acción no se puede deshacer."
+            );
+
+            if (!confirmed) return;
+
+            state = {
+                yes: 0,
+                no: 0,
+                history: [],
+                lastUpdated: null
+            };
+
+            saveVotes();
+            updateDashboard();
+        }
+
+        // Update dashboard
+
+        function updateDashboard() {
+            const total = state.yes + state.no;
+
+            const yesPercent = total > 0
+                ? (state.yes / total) * 100
+                : 0;
+
+            const noPercent = total > 0
+                ? (state.no / total) * 100
+                : 0;
+
+            const formatPercent = value =>
+                value.toFixed(1).replace(".", ",") + " %";
+
+            document.getElementById("yesPercent").textContent =
+                formatPercent(yesPercent);
+
+            document.getElementById("noPercent").textContent =
+                formatPercent(noPercent);
+
+            document.getElementById("yesVotes").textContent =
+                state.yes + " votos";
+
+            document.getElementById("noVotes").textContent =
+                state.no + " votos";
+
+            document.getElementById("barYes").style.width =
+                yesPercent + "%";
+
+            document.getElementById("barNo").style.width =
+                noPercent + "%";
+
+            document.getElementById("totalVotes").textContent =
+                total + " votos contabilizados";
+
+            document.getElementById("undoButton").disabled =
+                state.history.length === 0;
+
+            const updated = document.getElementById("updated");
+
+            if (state.lastUpdated) {
+                const date = new Date(state.lastUpdated);
+
+                updated.textContent =
+                    "Última actualización: " +
+                    date.toLocaleTimeString("es-MX", {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    });
+            } else {
+                updated.textContent =
+                    "Esperando los primeros votos";
+            }
+        }
+
+        updateDashboard();
+    </script>
+
+</body>
+</html>
